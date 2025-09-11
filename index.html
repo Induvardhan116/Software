@@ -1,11 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>HTML with Internal & Inline CSS</title>
+    <!-- Internal CSS -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        p {
+            color: #666;
+            line-height: 1.6;
+        }
+        .highlight {
+            background-color: yellow;
+            padding: 5px;
+            border-radius: 3px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Hello</h1>
+
+    <h1>Welcome to My Page</h1>
+
+    <p>This is a paragraph with some default styling applied by the internal CSS defined in the <span class="highlight">head section</span> of this HTML file.</p>
+
+    <!-- Inline CSS -->
+    <p style="color: blue; font-weight: bold;">This paragraph has inline CSS applied, overriding some of the default styles.</p>
+
+    <p>Another paragraph to demonstrate the application of styles.</p>
+
 </body>
 </html>
