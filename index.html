@@ -3,93 +3,172 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Pizza Builder — Demo</title>
+  <title>🍕 Pizza Builder Demo</title>
   <style>
-    :root{font-family:Inter,ui-sans-serif,system-ui,Arial,Helvetica,sans-serif;color:#111}
-    body{display:flex;align-items:flex-start;gap:24px;padding:28px;background:#f6f8fa}
-    .card{background:#fff;border-radius:12px;box-shadow:0 6px 18px rgba(20,20,30,0.06);padding:18px;width:480px}
-    h1{font-size:20px;margin:0 0 12px}
-    label{display:block;margin:8px 0;font-size:14px}
-    .row{display:flex;gap:10px;align-items:center}
-    .toppings{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
-    button{margin-top:12px;padding:10px 14px;border-radius:8px;border:0;background:#2b6cb0;color:#fff;cursor:pointer}
-    pre{background:#0f1724;color:#dbeafe;padding:12px;border-radius:8px;overflow:auto}
-    .summary{flex:1;min-width:320px}
-    small{color:#6b7280}
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(120deg, #f9fafb, #e9eff5);
+      color: #222;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    header {
+      background: #e53e3e;
+      color: #fff;
+      text-align: center;
+      padding: 18px;
+      font-size: 22px;
+      font-weight: bold;
+    }
+    main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      padding: 24px;
+      flex: 1;
+    }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      padding: 20px;
+      transition: transform 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+    }
+    h1, h2 {
+      margin-top: 0;
+      font-size: 20px;
+    }
+    label {
+      display: block;
+      margin: 10px 0 4px;
+      font-weight: 500;
+    }
+    select, input[type="text"], input[type="checkbox"], input[type="radio"] {
+      margin: 4px 0;
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .toppings {
+      display: grid;
+      grid-template-columns: repeat(2,1fr);
+      gap: 6px;
+    }
+    button {
+      margin-top: 14px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: 0;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #buildBtn {
+      background: #2b6cb0;
+      color: white;
+    }
+    #buildBtn:hover { background: #1e4f85; }
+    #resetBtn {
+      background: #e53e3e;
+      color: white;
+      margin-left: 8px;
+    }
+    #resetBtn:hover { background: #c53030; }
+    pre {
+      background: #111827;
+      color: #d1fae5;
+      padding: 16px;
+      border-radius: 12px;
+      overflow-x: auto;
+      font-size: 14px;
+    }
+    footer {
+      text-align: center;
+      padding: 16px;
+      font-size: 13px;
+      color: #555;
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Pizza Order Builder (Demo)</h1>
-    <p><small>Choose options and click <strong>Build Order</strong>. This demonstrates the Builder Pattern in JavaScript.</small></p>
+  <header>🍕 Pizza Order Builder (Builder Pattern Demo)</header>
 
-    <form id="pizzaForm">
-      <label>Size
+  <main>
+    <!-- Left: Form -->
+    <div class="card">
+      <h1>Customize Your Pizza</h1>
+      <form id="pizzaForm">
+        <label>Size</label>
         <select id="size">
           <option>Small</option>
           <option selected>Medium</option>
           <option>Large</option>
           <option>Extra Large</option>
         </select>
-      </label>
 
-      <label>Cheese
+        <label>Cheese</label>
         <select id="cheese">
           <option>Regular</option>
           <option>Mozzarella</option>
           <option>Vegan</option>
           <option>Extra Cheese</option>
         </select>
-      </label>
 
-      <label>Crust Type</label>
-      <div class="row">
-        <label><input type="radio" name="crust" value="Thin" checked> Thin</label>
-        <label><input type="radio" name="crust" value="Regular"> Regular</label>
-        <label><input type="radio" name="crust" value="Stuffed"> Stuffed</label>
-      </div>
+        <label>Crust Type</label>
+        <div>
+          <label><input type="radio" name="crust" value="Thin" checked> Thin</label>
+          <label><input type="radio" name="crust" value="Regular"> Regular</label>
+          <label><input type="radio" name="crust" value="Stuffed"> Stuffed</label>
+        </div>
 
-      <label>Toppings</label>
-      <div class="toppings">
-        <label><input type="checkbox" value="Pepperoni" class="topping"> Pepperoni</label>
-        <label><input type="checkbox" value="Mushrooms" class="topping"> Mushrooms</label>
-        <label><input type="checkbox" value="Onions" class="topping"> Onions</label>
-        <label><input type="checkbox" value="Bell Peppers" class="topping"> Bell Peppers</label>
-        <label><input type="checkbox" value="Olives" class="topping"> Olives</label>
-        <label><input type="checkbox" value="Pineapple" class="topping"> Pineapple</label>
-      </div>
+        <label>Toppings</label>
+        <div class="toppings">
+          <label><input type="checkbox" value="Pepperoni" class="topping"> Pepperoni</label>
+          <label><input type="checkbox" value="Mushrooms" class="topping"> Mushrooms</label>
+          <label><input type="checkbox" value="Onions" class="topping"> Onions</label>
+          <label><input type="checkbox" value="Bell Peppers" class="topping"> Bell Peppers</label>
+          <label><input type="checkbox" value="Olives" class="topping"> Olives</label>
+          <label><input type="checkbox" value="Pineapple" class="topping"> Pineapple</label>
+        </div>
 
-      <label>Delivery Preference
+        <label>Delivery Preference</label>
         <select id="delivery">
           <option>Pickup</option>
           <option selected>Home Delivery</option>
           <option>Contactless</option>
         </select>
-      </label>
 
-      <label><input type="checkbox" id="extraSauce"> Add Extra Sauce</label>
+        <label><input type="checkbox" id="extraSauce"> Add Extra Sauce</label>
 
-      <button type="button" id="buildBtn">Build Order</button>
-      <button type="button" id="resetBtn" style="background:#e53e3e;margin-left:8px">Reset</button>
-    </form>
+        <div>
+          <button type="button" id="buildBtn">Build Order</button>
+          <button type="button" id="resetBtn">Reset</button>
+        </div>
+      </form>
+    </div>
 
-  </div>
+    <!-- Right: Output -->
+    <div class="card">
+      <h1>Built Pizza Object</h1>
+      <pre id="output">{}</pre>
+      <h2>Why Builder Pattern?</h2>
+      <ul>
+        <li>Step-by-step object construction.</li>
+        <li>Optional features are added only when selected.</li>
+        <li>Easy to extend with new options later.</li>
+      </ul>
+    </div>
+  </main>
 
-  <div class="card summary">
-    <h1>Built Pizza Object</h1>
-    <p><small>The builder creates the final <code>Pizza</code> product without a complicated constructor.</small></p>
-    <pre id="output">{} </pre>
-
-    <h2 style="font-size:16px;margin-top:14px">Notes</h2>
-    <ul>
-      <li>Builder class encapsulates step-by-step construction.</li>
-      <li>Optional features (toppings, extra sauce) are added only when chosen.</li>
-      <li>To add new options later (e.g. sauces, crust extras), only extend the builder — no change to existing code using it.</li>
-    </ul>
-  </div>
+  <footer>Demo created using HTML, CSS & JavaScript — Builder Pattern in action 🚀</footer>
 
   <script>
-    // Product class
     class Pizza {
       constructor(size, toppings, cheese, crustType, delivery, extraSauce){
         this.size = size;
@@ -102,7 +181,6 @@
       }
     }
 
-    // Builder
     class PizzaBuilder {
       constructor(size = 'Medium'){
         this.size = size;
@@ -112,58 +190,40 @@
         this.delivery = 'Pickup';
         this.extraSauce = false;
       }
-
       setSize(size){ this.size = size; return this; }
       addTopping(t){ this.toppings.push(t); return this; }
       setCheese(c){ this.cheese = c; return this; }
       setCrust(cr){ this.crustType = cr; return this; }
       setDelivery(d){ this.delivery = d; return this; }
       addExtraSauce(){ this.extraSauce = true; return this; }
-
-      // Final build method
-      build(){
-        // Validation example: Large stuffed crust not allowed for "Pineapple" (just an example)
-        if(this.toppings.includes('Pineapple') && this.crustType === 'Stuffed'){
-          // we will still build but add a warning field
-          const pizza = new Pizza(this.size, this.toppings, this.cheese, this.crustType, this.delivery, this.extraSauce);
-          pizza.warning = 'Stuffed crust + Pineapple may increase bake time.';
-          return pizza;
-        }
-        return new Pizza(this.size, this.toppings, this.cheese, this.crustType, this.delivery, this.extraSauce);
-      }
+      build(){ return new Pizza(this.size, this.toppings, this.cheese, this.crustType, this.delivery, this.extraSauce); }
     }
 
-    // UI wiring
     const buildBtn = document.getElementById('buildBtn');
     const resetBtn = document.getElementById('resetBtn');
     const output = document.getElementById('output');
 
-    function readFormAndBuild(){
+    function buildPizzaFromForm(){
       const size = document.getElementById('size').value;
       const cheese = document.getElementById('cheese').value;
       const crust = document.querySelector('input[name="crust"]:checked').value;
       const delivery = document.getElementById('delivery').value;
       const extraSauce = document.getElementById('extraSauce').checked;
-
       const toppings = Array.from(document.querySelectorAll('.topping:checked')).map(n => n.value);
 
-      // Use the builder to construct the pizza step by step
       const builder = new PizzaBuilder(size)
         .setCheese(cheese)
         .setCrust(crust)
         .setDelivery(delivery);
 
-      // Add toppings optionally
       toppings.forEach(t => builder.addTopping(t));
-
       if(extraSauce) builder.addExtraSauce();
 
-      const pizza = builder.build();
-      return pizza;
+      return builder.build();
     }
 
     buildBtn.addEventListener('click', ()=>{
-      const pizza = readFormAndBuild();
+      const pizza = buildPizzaFromForm();
       output.textContent = JSON.stringify(pizza, null, 2);
     });
 
@@ -172,7 +232,7 @@
       output.textContent = '{}';
     });
 
-    // initial demo pizza
+    // Preload demo pizza
     const demo = new PizzaBuilder('Large')
       .addTopping('Pepperoni')
       .addTopping('Mushrooms')
@@ -181,7 +241,6 @@
       .setDelivery('Home Delivery')
       .addExtraSauce()
       .build();
-
     output.textContent = JSON.stringify(demo, null, 2);
   </script>
 </body>
