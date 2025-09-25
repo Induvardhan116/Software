@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Banking App — Observer / Strategy / Command</title>
+  <style>
+    :root{
+      --bg:#0f1724; --card:#0b1220; --muted:#9aa4b2; --accent:#5eead4; --accent-2:#60a5fa; --danger:#fb7185;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    body{margin:0;background:#0e1525;color:#e6eef8}
+    .app{max-width:1200px;margin:20px auto;padding:20px;display:grid;grid-template-columns:320px 1fr 280px;gap:20px}
+    .panel,.card{background:var(--card);border-radius:12px;padding:18px;box-shadow:0 6px 20px rgba(0,0,0,0.6)}
+    h2{margin:0 0 12px;font-size:18px}
+    h3{margin-top:20px;font-size:16px;color:var(--accent-2)}
+    .btn{padding:8px 12px;border-radius:8px;border:none;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#042833;font-weight:600;cursor:pointer;transition:0.2s}
+    .btn:hover{transform:translateY(-2px)}
+    .btn.ghost{background:transparent;color:var(--accent-2);border:1px solid var(--accent-2)}
+    .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+    input,select{background:transparent;border:1px solid rgba(255,255,255,0.15);padding:8px;border-radius:8px;color:inherit;width:100%}
+    label{font-size:13px;color:var(--muted);display:block;margin:8px 0 4px}
+    .balance{font-size:28px;font-weight:700}
+    .notify-list{display:flex;flex-direction:column;gap:8px;max-height:420px;overflow:auto}
+    .notify{padding:10px;border-radius:8px;background:rgba(96,165,250,0.08);animation:fadeIn 0.4s}
+    .history-table{width:100%;border-collapse:collapse}
+    .history-table th, .history-table td{padding:8px;text-align:left;border-bottom:1px dashed rgba(255,255,255,0.2);font-size:13px}
+    footer{grid-column:1/-1;margin-top:12px;color:var(--muted);font-size:13px;text-align:center}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes flashGreen{0%{background:rgba(16,185,129,0.2)}100%{background:transparent}}
+    @keyframes flashRed{0%{background:rgba(239,68,68,0.2)}100%{background:transparent}}
+    @keyframes flashBlue{0%{background:rgba(59,130,246,0.2)}100%{background:transparent}}
+    .flash-green{animation:flashGreen 1s ease}
+    .flash-red{animation:flashRed 1s ease}
+    .flash-blue{animation:flashBlue 1s ease}
+    /* Toasts */
+    #toasts{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:8px;z-index:999}
+    .toast{padding:10px 14px;border-radius:8px;font-size:14px;animation:fadeIn 0.4s ease;box-shadow:0 4px 10px rgba(0,0,0,0.4)}
+    .toast.success{background:#16a34a;color:#fff}
+    .toast.error{background:#dc2626;color:#fff}
+    @media(max-width:1000px){.app{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Left Panel -->
+    <div class="panel">
+      <h2>Create Account</h2>
+      <label>Name<input id="newName" /></label>
+      <label>Type<select id="newType"><option>Savings</option><option>Current</option><option>Fixed</option></select></label>
+      <label>Balance<input id="newBal" type="number" value="1000" /></label>
+      <div class="btn-row">
+        <button class="btn" onclick="createAccount()">Create</button>
+      </div>
+      <h3>Accounts</h3>
+      <div id="accounts"></div>
+    </div>
+
+    <!-- Main Panel -->
+    <div class="main">
+      <div class="card">
+        <h2>Selected Account</h2>
+        <div id="selName">None</div>
+        <div class="balance" id="selBalance">—</div>
+        <div id="selType">—</div>
+      </div>
+
+      <div class="card">
+        <h2>Transactions</h2>
+        <label>Amount<input id="amt" /></label>
+        <div class="btn-row">
+          <button class="btn" onclick="deposit()">Deposit</button>
+          <button class="btn" onclick="withdraw()">Withdraw</button>
+        </div>
+        <label>Transfer To<select id="transferTo"></select></label>
+        <label>Amount<input id="amtT" /></label>
+        <button class="btn" onclick="transfer()">Transfer</button>
+      </div>
+
+      <div class="card">
+        <h2>History</h2>
+        <table class="history-table"><thead><tr><th>Action</th><th>Amount</th><th>Date</th></tr></thead><tbody id="hist"></tbody></table>
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="panel">
+      <h2>Notifications</h2>
+      <div id="notify" class="notify-list"></div>
+    </div>
+    <footer>Banking App — Observer, Strategy, Command</footer>
+  </div>
+  <div id="toasts"></div>
+
+  <script>
+    // Utils
+    function showToast(msg,type){
+      const t=document.createElement('div');
+      t.className='toast '+type;
+      t.textContent=msg;
+      document.getElementById('toasts').appendChild(t);
+      setTimeout(()=>t.remove(),2500);
+    }
+
+    // Observer
+    class Subject{constructor(){this.obs=[]}attach(o){this.obs.push(o)}notify(m){this.obs.forEach(o=>o.update(m))}}
+    class NotificationCenter{constructor(el){this.el=el}update(msg){const d=document.createElement('div');d.className='notify';d.textContent=msg;this.el.prepend(d)}}
+
+    // Account
+    class Account extends Subject{
+      constructor(id,name,type,balance){super();this.id=id;this.name=name;this.type=type;this.balance=balance;this.history=[]}
+      deposit(a){this.balance+=a;this.history.push(['Deposit',a,new Date()]);this.notify(`${this.name}: Deposit ${a}`)}
+      withdraw(a){if(a>this.balance){this.notify(`${this.name}: Withdraw failed`);return false}
+        this.balance-=a;this.history.push(['Withdraw',a,new Date()]);this.notify(`${this.name}: Withdraw ${a}`);return true}
+      transfer(to,a){if(this.withdraw(a)){to.deposit(a);this.history.push(['Transfer',a,new Date()]);this.notify(`${this.name}: Transfer ${a} to ${to.name}`);return true}
+        return false}
+    }
+
+    // Data
+    const notify=new NotificationCenter(document.getElementById('notify'));
+    let accounts=[],selected=null,idCounter=1;
+
+    function validateName(name){return /^[A-Za-z ]+$/.test(name)}
+    function validateNum(val){return /^[0-9]+(\.[0-9]+)?$/.test(val)}
+
+    function createAccount(){
+      const n=document.getElementById('newName').value.trim();
+      const t=document.getElementById('newType').value;
+      const b=document.getElementById('newBal').value.trim();
+      if(!validateName(n)){showToast('Name must be alphabetic','error');return}
+      if(!validateNum(b)){showToast('Balance must be number','error');return}
+      const acc=new Account(idCounter++,n,t,+b);acc.attach(notify);accounts.push(acc);
+      renderAccounts();showToast('Account created','success');
+    }
+
+    function renderAccounts(){
+      const c=document.getElementById('accounts');c.innerHTML='';
+      accounts.forEach(a=>{
+        const d=document.createElement('div');
+        d.innerHTML=`<b>${a.name}</b> (${a.type}) — ${a.balance} 
+          <button class="btn" onclick="selectAcc(${a.id})">Select</button>`;
+        c.appendChild(d);
+      });
+      renderTransferOptions();
+    }
+
+    function selectAcc(id){
+      selected=accounts.find(a=>a.id===id);
+      document.getElementById('selName').textContent=selected.name;
+      document.getElementById('selBalance').textContent=selected.balance;
+      document.getElementById('selType').textContent=selected.type;
+      renderHistory();
+    }
+
+    function renderHistory(){
+      const h=document.getElementById('hist');h.innerHTML='';
+      if(!selected)return;
+      selected.history.forEach(r=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML=`<td>${r[0]}</td><td>${r[1]}</td><td>${r[2].toLocaleString()}</td>`;
+        h.appendChild(tr);
+      });
+      document.getElementById('selBalance').textContent=selected.balance;
+    }
+
+    function renderTransferOptions(){
+      const s=document.getElementById('transferTo');s.innerHTML='';
+      accounts.forEach(a=>{if(selected&&a.id!==selected.id){const o=document.createElement('option');o.value=a.id;o.textContent=a.name;s.appendChild(o)}});
+    }
+
+    function deposit(){
+      if(!selected)return showToast('Create/select an account first','error');
+      const v=document.getElementById('amt').value.trim();
+      if(!validateNum(v))return showToast('Amount must be number','error');
+      selected.deposit(+v);renderHistory();showToast('Deposit success','success');
+    }
+
+    function withdraw(){
+      if(!selected)return showToast('Create/select an account first','error');
+      const v=document.getElementById('amt').value.trim();
+      if(!validateNum(v))return showToast('Amount must be number','error');
+      const ok=selected.withdraw(+v);renderHistory();
+      showToast(ok?'Withdraw success':'Withdraw failed',''+(ok?'success':'error'));
+    }
+
+    function transfer(){
+      if(!selected)return showToast('Create/select an account first','error');
+      const v=document.getElementById('amtT').value.trim();
+      const toId=+document.getElementById('transferTo').value;
+      const to=accounts.find(x=>x.id===toId);
+      if(!validateNum(v))return showToast('Amount must be number','error');
+      if(!to)return showToast('Choose account to transfer','error');
+      const ok=selected.transfer(to,+v);renderHistory();
+      showToast(ok?'Transfer success':'Transfer failed',ok?'success':'error');
+    }
+  </script>
+</body>
+</html>
